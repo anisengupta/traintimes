@@ -6,9 +6,10 @@ entrypoint: gunicorn -t 0 -b 0.0.0.0:8080 code.app:server
 
 instance_class: F1
 
-basic_scaling:
-    max_instances: 1
-    idle_timeout: 20m
+automatic_scaling:
+  max_idle_instances: 1
+  min_pending_latency: automatic
+  max_pending_latency: 30ms
 
 resources:
     cpu: 1
