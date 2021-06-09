@@ -202,7 +202,6 @@ rope==0.18.0
 rsa==4.7.1
 ruamel-yaml==0.15.87
 seaborn==0.11.0
-Send2Trash==1.5.0
 setuptools==50.3.1.post20201107
 simplegeneric==0.8.1
 simplejson==3.17.2
