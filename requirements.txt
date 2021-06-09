@@ -254,7 +254,3 @@ xmltodict==0.12.0
 yapf==0.30.0
 yarl==1.6.3
 zeep==4.0.0
-zict==2.0.0
-zipp==3.4.0
-zope.event==4.5.0
-zope.interface==5.1.2
