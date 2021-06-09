@@ -36,7 +36,6 @@ chardet==3.0.4
 click==7.1.2
 cloudpickle==1.6.0
 colorama==0.4.4
-conda-verify==3.4.2
 contextlib2==0.6.0.post1
 cryptography==3.1.1
 cycler==0.10.0
