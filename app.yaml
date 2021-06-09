@@ -2,7 +2,7 @@
 runtime: python38
 service: default
 
-entrypoint: gunicorn -t 0 -b 0.0.0.0:8080 code.main:server
+entrypoint: gunicorn -t 0 -b 0.0.0.0:8080 code.app:server
 
 instance_class: F1
 
