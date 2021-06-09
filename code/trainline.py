@@ -33,7 +33,19 @@ class DatesTimes:
         """
         return "th" if 11 <= d <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(d % 10, "th")
 
-    def custom_strftime(self, format, t):
+    def custom_strftime(self, format: str, t: datetime):
+        """
+        Adds a custom suffix after the day.
+
+        Parameters
+        ----------
+        format: str, the format of the time.
+        t: the datetime object.
+
+        Returns
+        -------
+
+        """
         return t.strftime(format).replace(
             "{S}", str(t.day) + DatesTimes().suffix(t.day)
         )
