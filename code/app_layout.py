@@ -20,6 +20,7 @@ def make_navbar_title(station: str):
 
     Returns
     -------
+    A navbar title.
 
     """
     # Set today's date
