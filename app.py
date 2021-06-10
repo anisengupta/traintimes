@@ -18,6 +18,8 @@ app = dash.Dash(
     external_stylesheets=[dbc.themes.UNITED],
 )
 
+server = app.server
+
 # Set the title
 title = app_layout.make_navbar_title(station=config.STATION)
 
