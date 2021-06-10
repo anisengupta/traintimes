@@ -24,7 +24,7 @@ def make_navbar_title(station: str):
 
     """
     # Set today's date
-    todays_date = trainline.DatesTimes().custom_strftime("%{S}-%B-%Y", datetime.now())
+    todays_date = trainline.DatesTimes().custom_strftime("{S}-%B-%Y", datetime.now())
 
     navbar = dbc.NavbarSimple(
         children=[dbc.NavItem(dbc.NavLink("Page 1", href="#"))],
