@@ -64,7 +64,7 @@ itself in colour and text:
 Latest departures
 *****************
 
-The third feature is the latest departure table which again makes use of the response objects, retrieves all the
+The third feature is the latest departure table which again makes use of the response object, retrieves all the
 relevant information and places it in a dash table:
 
 .. image:: ../images/latest_departures.png
@@ -81,10 +81,14 @@ adjusted:
 Note that all features update themselves automatically using Dash Core Components Interval component
 (https://dash.plotly.com/dash-core-components/interval). This allows us to set the times of refreshing and the component
 will fire a callback to a period we specify. Currently for this dashboard, all features (apart from the time) is
-configured to refresh half an hour.
+configured to refresh every half an hour.
 
 This dashboard is not just configured to the station *Downham Market*, we can choose any station of our liking
-(in the UK) and it should update itself accordingly:
+(in the UK). All we need to do si update the *config.py* file:
+
+.. image:: ../images/config_file.png
+
+And the codebase should handle this automatically:
 
 .. image:: ../images/dashboard_alternative_station.png
 

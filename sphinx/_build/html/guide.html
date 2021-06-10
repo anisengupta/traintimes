@@ -32,9 +32,6 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="code.html" title="Code Documentation"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -103,7 +100,7 @@ itself in colour and text:</p>
 </div>
 <div class="section" id="latest-departures">
 <h2>Latest departures<a class="headerlink" href="#latest-departures" title="Permalink to this headline">¶</a></h2>
-<p>The third feature is the latest departure table which again makes use of the response objects, retrieves all the
+<p>The third feature is the latest departure table which again makes use of the response object, retrieves all the
 relevant information and places it in a dash table:</p>
 <img alt="_images/latest_departures.png" src="_images/latest_departures.png" />
 </div>
@@ -116,9 +113,11 @@ adjusted:</p>
 <p>Note that all features update themselves automatically using Dash Core Components Interval component
 (<a class="reference external" href="https://dash.plotly.com/dash-core-components/interval">https://dash.plotly.com/dash-core-components/interval</a>). This allows us to set the times of refreshing and the component
 will fire a callback to a period we specify. Currently for this dashboard, all features (apart from the time) is
-configured to refresh half an hour.</p>
+configured to refresh every half an hour.</p>
 <p>This dashboard is not just configured to the station <em>Downham Market</em>, we can choose any station of our liking
-(in the UK) and it should update itself accordingly:</p>
+(in the UK). All we need to do si update the <em>config.py</em> file:</p>
+<img alt="_images/config_file.png" src="_images/config_file.png" />
+<p>And the codebase should handle this automatically:</p>
 <img alt="_images/dashboard_alternative_station.png" src="_images/dashboard_alternative_station.png" />
 </div>
 </div>
@@ -174,9 +173,6 @@ configured to refresh half an hour.</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="right" >
           <a href="code.html" title="Code Documentation"
              >next</a> |</li>
