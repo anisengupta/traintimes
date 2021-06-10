@@ -70,7 +70,7 @@ def register_app_callbacks(app):
         A time that is updated every second.
 
         """
-        now = datetime.datetime.now()
+        now = datetime.datetime.now() + datetime.timedelta(hours=1)
         now_str = now.strftime("%H:%M:%S")
 
         return [html.P(now_str)]
