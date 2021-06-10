@@ -6,6 +6,7 @@ import pandas as pd
 import requests
 from datetime import datetime
 import time
+from apps.config import STATION
 
 # Functions for getting all data via the LDBWS API (https://lite.realtime.nationalrail.co.uk/OpenLDBWS/)
 class DatesTimes:
@@ -507,7 +508,7 @@ class TrainInformation:
 
         for service in services:
             train_dict = TrainInformation().make_traintimes_dict(
-                service=service, station="Downham Market"
+                service=service, station=STATION
             )
             df = pd.DataFrame.from_dict(train_dict, orient="index").T
             df_list.append(df)

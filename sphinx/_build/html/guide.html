@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+
+<html lang="English">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guide &#8212; Traintimes 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Code Documentation" href="code.html" />
+    <link rel="prev" title="Traintimes documentation" href="index.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head><body>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="code.html" title="Code Documentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Traintimes documentation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Traintimes 0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Guide</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="guide">
+<h1>Guide<a class="headerlink" href="#guide" title="Permalink to this headline">¶</a></h1>
+<p>The Traintimes repository contains code that creates a dashboard that retrieves the latest departures,
+status and calling stations based on a specified station. The inspiration for this project came recently, as things
+in the UK are opening up more and more, we find ourselves planning and going on more and more train journeys.</p>
+<p>One of the pre-requisite steps for this is to go online (<a class="reference external" href="https://www.thetrainline.com/">https://www.thetrainline.com/</a>) to see the latest train times,
+departures and other information. I was on my way to meeting some friends when I thought; wouldn't it be great
+if I had a version of the live train information in my home that updates itself?</p>
+<p>This project relies on the Live Departure Boards Web Service (LDBWS) API from National Rail
+(<a class="reference external" href="https://lite.realtime.nationalrail.co.uk/OpenLDBWS/">https://lite.realtime.nationalrail.co.uk/OpenLDBWS/</a>). This is a SOAP API which provides real time access to train
+information, provided in an XML format. There is a pre-requisite that involves a registration process and gaining
+an access token. Without this, one cannot make an API calls to retrieve information:</p>
+<img alt="_images/darwin_registration.png" src="_images/darwin_registration.png" />
+<p>Note that we also make use of the Zeep library which provides a programmatic interface to a SOAP server. For more
+information, please consult this documentation: <a class="reference external" href="https://docs.python-zeep.org/en/master/index.html">https://docs.python-zeep.org/en/master/index.html</a></p>
+<div class="line-block">
+<div class="line">This a screenshot of what the end dashboard looks like:</div>
+</div>
+<img alt="_images/dashboard.png" src="_images/dashboard.png" />
+<div class="line-block">
+<div class="line">As seen from the above image, this is a very simple dashboard that relies on a few key elements.</div>
+</div>
+<div class="section" id="primary-messages">
+<h2>Primary Messages<a class="headerlink" href="#primary-messages" title="Permalink to this headline">¶</a></h2>
+<p>The first are the <em>latest messages</em> card which retrieves any messages returned by the API:</p>
+<img alt="_images/dashboard_messages.png" src="_images/dashboard_messages.png" />
+<div class="line-block">
+<div class="line">This is fairly trivial to retrieve as we can specify the soap headers and initiate a response:</div>
+</div>
+<img alt="_images/soap_headers.png" src="_images/soap_headers.png" />
+<img alt="_images/example_response.png" src="_images/example_response.png" />
+<div class="line-block">
+<div class="line">From the above we can say the response objects contains a field called <em>nrccMessages</em>.</div>
+</div>
+<p>This is retrieved and put into
+the Dash card and displays any primary messages.</p>
+</div>
+<div class="section" id="api-status">
+<h2>API Status<a class="headerlink" href="#api-status" title="Permalink to this headline">¶</a></h2>
+<p>The second feature of the dashboard is the API status card:</p>
+<img alt="_images/dashboard_api_status.png" src="_images/dashboard_api_status.png" />
+<div class="line-block">
+<div class="line">This is also trivial to build as we again use the response object itself.</div>
+</div>
+<p>If the API call returns an empty response,
+the status of the API changes and will require further investigation. However if the response returns a populated
+dictionary, then we assume that the API is running normally.</p>
+<p>Note that we have configured that the Dash card so that in the event of API not returning any data, the card updates
+itself in colour and text:</p>
+<img alt="_images/dashboard_api_status_warning.png" src="_images/dashboard_api_status_warning.png" />
+</div>
+<div class="section" id="latest-departures">
+<h2>Latest departures<a class="headerlink" href="#latest-departures" title="Permalink to this headline">¶</a></h2>
+<p>The third feature is the latest departure table which again makes use of the response objects, retrieves all the
+relevant information and places it in a dash table:</p>
+<img alt="_images/latest_departures.png" src="_images/latest_departures.png" />
+</div>
+<div class="section" id="calling-table">
+<h2>Calling table<a class="headerlink" href="#calling-table" title="Permalink to this headline">¶</a></h2>
+<p>The final feature, which is quite useful, shows at what stations the latest train from the departures table is calling
+at. Alongside this, the estimate time of arrivals and statuses are also displayed, in case plans need to be changed or
+adjusted:</p>
+<img alt="_images/calling_at_table.png" src="_images/calling_at_table.png" />
+<p>Note that all features update themselves automatically using Dash Core Components Interval component
+(<a class="reference external" href="https://dash.plotly.com/dash-core-components/interval">https://dash.plotly.com/dash-core-components/interval</a>). This allows us to set the times of refreshing and the component
+will fire a callback to a period we specify. Currently for this dashboard, all features (apart from the time) is
+configured to refresh half an hour.</p>
+<p>This dashboard is not just configured to the station <em>Downham Market</em>, we can choose any station of our liking
+(in the UK) and it should update itself accordingly:</p>
+<img alt="_images/dashboard_alternative_station.png" src="_images/dashboard_alternative_station.png" />
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Guide</a><ul>
+<li><a class="reference internal" href="#primary-messages">Primary Messages</a></li>
+<li><a class="reference internal" href="#api-status">API Status</a></li>
+<li><a class="reference internal" href="#latest-departures">Latest departures</a></li>
+<li><a class="reference internal" href="#calling-table">Calling table</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Traintimes documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="code.html"
+                        title="next chapter">Code Documentation</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/guide.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="code.html" title="Code Documentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Traintimes documentation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Traintimes 0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Guide</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, Aniruddha Sengupta.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>
