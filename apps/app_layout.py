@@ -3,11 +3,11 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
-import trainline
+import apps.trainline as trainline
 import pandas as pd
 import dash_table
 from datetime import datetime
-from app_callbacks import prerequisite_process
+from apps.app_callbacks import prerequisite_process
 
 # Functions
 def make_navbar_title(station: str):

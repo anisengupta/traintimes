@@ -63,7 +63,7 @@ class CRSNames:
 
     def make_crs_dict(self, url: str) -> dict:
         """
-        Makes a dictionary of station names in the UK and their respective CRS code.
+        Makes a dictionary of station names in the UK and their respective CRS apps.
 
         Parameters
         ----------
@@ -83,7 +83,7 @@ class CRSNames:
         r = requests.get(url, headers=header)
 
         # Construct the dataframe
-        df = pd.read_html(r.text)[4]
+        df = pd.read_html(r.text)[5]
         df.columns = df.iloc[0]
         df = df.drop(df.index[0])
 
@@ -105,13 +105,13 @@ class CRSNames:
 
         Returns
         -------
-        A string with the crs code of the station name specified.
+        A string with the crs apps of the station name specified.
 
         """
         try:
             return crs_dict.get(station)
         except:
-            return "No CRS code found"
+            return "No CRS apps found"
 
 
 class TrainInformation:

@@ -1,4 +1,4 @@
-# This is the config file for the code in trainline.py to function
+# This is the config file for the apps in trainline.py to function
 # Enter here all the relevant details required
 
 URL = 'https://lite.realtime.nationalrail.co.uk/OpenLDBWS/wsdl.aspx?ver=2017-10-01'

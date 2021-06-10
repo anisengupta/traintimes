@@ -4,10 +4,10 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
-from config import URL, TOKEN, STATION, CRS_URL
-import app_layout
-from app_callbacks import register_app_callbacks, prerequisite_process
-import trainline
+from apps import config
+from apps import app_layout
+from apps.app_callbacks import register_app_callbacks, prerequisite_process
+from apps import trainline
 import pandas as pd
 import datetime
 
@@ -19,7 +19,7 @@ app = dash.Dash(
 )
 
 # Set the title
-title = app_layout.make_navbar_title(station=STATION)
+title = app_layout.make_navbar_title(station=config.STATION)
 
 # Initiate the response
 response = prerequisite_process()

@@ -4,9 +4,9 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
-from config import URL, TOKEN, STATION, CRS_URL
-import app_layout
-import trainline
+from apps.config import URL, TOKEN, STATION, CRS_URL
+import apps.app_layout as app_layout
+import apps.trainline as trainline
 import pandas as pd
 import datetime
 
