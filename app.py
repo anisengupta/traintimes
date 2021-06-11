@@ -24,7 +24,7 @@ server = app.server
 title = app_layout.make_navbar_title(station=config.STATION)
 
 # Initiate the response
-response = prerequisite_process()
+response = prerequisite_process(station=config.STATION)
 
 # Initiate the service
 services = trainline.TrainInformation().get_service(response=response)
@@ -85,6 +85,8 @@ app.layout = html.Div(
         app_layout.make_break(),
         calling_points_title,
         calling_points_extra_info_table,
+        app_layout.make_break(),
+        app_layout.generate_station_change_modal()
     ]
 )
 

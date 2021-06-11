@@ -8,6 +8,7 @@ import pandas as pd
 import dash_table
 from datetime import datetime
 from apps.app_callbacks import prerequisite_process
+from apps import config
 
 # Functions
 def make_navbar_title(station: str):
@@ -27,6 +28,7 @@ def make_navbar_title(station: str):
     todays_date = trainline.DatesTimes().custom_strftime("{S}-%B-%Y", datetime.now())
 
     navbar = dbc.NavbarSimple(
+        id='title',
         children=[dbc.NavItem(dbc.NavLink("Page 1", href="#"))],
         brand=f"Latest train departures from {station} - {todays_date}",
         color="primary",
@@ -259,7 +261,7 @@ def make_api_status_card():
 
     """
     # Initiate the response
-    response = prerequisite_process()
+    response = prerequisite_process(station=config.STATION)
 
     # Evaluate the API status
     status = trainline.TrainInformation().check_api_status(response=response)
@@ -297,3 +299,53 @@ def make_api_status_card():
     )
 
     return primary_message_card
+
+
+def make_station_change_button():
+    """
+    Makes a button to allow the user to change stations.
+
+    Returns
+    -------
+    A dbc Button to be displayed.
+
+    """
+    return dbc.Button('Change Station',
+                      id='change_station_modal_open',
+                      className='btn btn-info'
+                      )
+
+
+def generate_station_change_modal():
+    """
+    Generates a Change Station Modal on the page.
+
+    Returns
+    -------
+    A dbc Modal to be generated.
+
+    """
+    modal = html.Div(
+        [
+            make_station_change_button(),
+            dbc.Modal(
+                [
+                    dbc.ModalHeader('Please enter the station name'),
+                    dbc.ModalBody(
+                        dbc.Input(id='change_station_modal_input',
+                                  placeholder='Please enter a station name',
+                                  type='text'),
+
+                    ),
+                    dbc.ModalFooter([
+                        dbc.Button('Submit', id='change_station_modal_submit', color='primary'),
+                        dbc.Button('Close', id='change_station_modal_close', className='ml-auto')
+                    ])
+                ],
+                id='change_station_modal'
+            )
+        ]
+    )
+
+    return modal
+

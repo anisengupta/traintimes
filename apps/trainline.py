@@ -6,7 +6,6 @@ import pandas as pd
 import requests
 from datetime import datetime
 import time
-from apps.config import STATION
 
 # Functions for getting all data via the LDBWS API (https://lite.realtime.nationalrail.co.uk/OpenLDBWS/)
 class DatesTimes:
@@ -362,6 +361,13 @@ class TrainInformation:
         """
         return service["destination"]["location"][0]["locationName"]
 
+    def check_train_cancellation(self, service: dict):
+        cancellation_status = service['isCancelled']
+        cancel_reason = service['cancelReason']
+        delay_reason = service['delayReason']
+
+        return cancellation_status, cancel_reason, delay_reason
+
     def calling_points(self, service: dict, _type: str) -> list:
         """
         Gets the calling points based on the _type param.
@@ -376,17 +382,27 @@ class TrainInformation:
         A list of calling point stations.
 
         """
-        calling_points = service[_type]["callingPointList"][0]["callingPoint"]
+        # Check if there is a cancellation/delay
+        initiate_calling_points = service[_type]
 
-        calling_point_stations = []
+        if initiate_calling_points is None:
+            cancellation_status, cancel_reason, delay_reason = TrainInformation().check_train_cancellation(
+                service=service
+            )
 
-        for calling_point in calling_points:
-            location_name = calling_point["locationName"]
-            calling_point_stations.append(location_name)
+            return cancel_reason
+        else:
+            calling_points = initiate_calling_points["callingPointList"][0]["callingPoint"]
 
-        return calling_point_stations
+            calling_point_stations = []
 
-    def calling_times(self, service: dict, _type: str) -> list:
+            for calling_point in calling_points:
+                location_name = calling_point["locationName"]
+                calling_point_stations.append(location_name)
+
+            return calling_point_stations
+
+    def calling_times(self, service: dict, _type: str):
         """
         Gets the times of the calling points based on the _type param.
 
@@ -400,15 +416,25 @@ class TrainInformation:
         A list of the calling point times.
 
         """
-        calling_points = service[_type]["callingPointList"][0]["callingPoint"]
+        # Check if there is a cancellation/delay
+        initiate_calling_points = service[_type]
 
-        calling_point_times = []
+        if initiate_calling_points is None:
+            cancellation_status, cancel_reason, delay_reason = TrainInformation().check_train_cancellation(
+                service=service
+            )
 
-        for calling_point in calling_points:
-            time = calling_point["st"]
-            calling_point_times.append(time)
+            return cancel_reason
+        else:
+            calling_points = initiate_calling_points["callingPointList"][0]["callingPoint"]
 
-        return calling_point_times
+            calling_point_times = []
+
+            for calling_point in calling_points:
+                time = calling_point["st"]
+                calling_point_times.append(time)
+
+            return calling_point_times
 
     def calling_status(self, service: dict, _type: str) -> list:
         """
@@ -423,15 +449,25 @@ class TrainInformation:
         A list of the calling point status.
 
         """
-        calling_points = service[_type]["callingPointList"][0]["callingPoint"]
+        # Check if there is a cancellation/delay
+        initiate_calling_points = service[_type]
 
-        calling_point_status = []
+        if initiate_calling_points is None:
+            cancellation_status, cancel_reason, delay_reason = TrainInformation().check_train_cancellation(
+                service=service
+            )
 
-        for calling_point in calling_points:
-            status = calling_point["et"]
-            calling_point_status.append(status)
+            return cancel_reason
+        else:
+            calling_points = initiate_calling_points["callingPointList"][0]["callingPoint"]
 
-        return calling_point_status
+            calling_point_status = []
+
+            for calling_point in calling_points:
+                status = calling_point["et"]
+                calling_point_status.append(status)
+
+            return calling_point_status
 
     def make_traintimes_dict(self, service: dict, station: str) -> dict:
         """
@@ -447,14 +483,30 @@ class TrainInformation:
         A dictionary of the train times and all the relevant information.
 
         """
+        def handle_eta_key():
+            """
+            Handles the ETA key creation. If there is a cancellation, then this
+            is handled so that the cancellation message is returned.
+
+            Returns
+            -------
+            A string, with either the ETA or the reason for cancellation/delay.
+
+            """
+            eta = TrainInformation().calling_times(service, "subsequentCallingPoints")
+            check_list = isinstance(eta, list)
+
+            if check_list:
+                return eta[-1]
+            else:
+                return eta
+
         df_dict = {
             "Station": station,
             "Origin": TrainInformation().get_origin_name(service=service),
             "Destination": TrainInformation().get_destination(service=service),
             "Starting_Time": TrainInformation().get_starting_time(service=service),
-            "ETA": TrainInformation().calling_times(service, "subsequentCallingPoints")[
-                -1
-            ],
+            "ETA": handle_eta_key(),
             "Status": TrainInformation().get_status(service=service),
             "Platform": TrainInformation().get_platform_number(service=service),
             "Operator": TrainInformation().get_train_operator(service=service),
@@ -491,13 +543,17 @@ class TrainInformation:
 
         return df_calling_points
 
-    def get_latest_departures_df(self, services: list) -> pd.DataFrame:
+    def get_latest_departures_df(self,
+                                 services: list,
+                                 station: str
+                                 ) -> pd.DataFrame:
         """
         Gets the latest number of departures based on the API call.
 
         Parameters
         ----------
         services: dict, the dictionary constructed from the API call.
+        station: str, the name of the station.
 
         Returns
         -------
@@ -508,9 +564,10 @@ class TrainInformation:
 
         for service in services:
             train_dict = TrainInformation().make_traintimes_dict(
-                service=service, station=STATION
+                service=service, station=station
             )
             df = pd.DataFrame.from_dict(train_dict, orient="index").T
             df_list.append(df)
 
         return pd.concat(df_list, axis=0)
+
