@@ -1,0 +1,696 @@
+
+<!DOCTYPE html>
+
+<html lang="English">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>trainline &#8212; Traintimes 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head><body>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Traintimes 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">trainline</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for trainline</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Initial Config</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">zeep</span> <span class="kn">import</span> <span class="n">Client</span>
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="c1"># Functions for getting all data via the LDBWS API (https://lite.realtime.nationalrail.co.uk/OpenLDBWS/)</span>
+<div class="viewcode-block" id="DatesTimes"><a class="viewcode-back" href="../code.html#trainline.DatesTimes">[docs]</a><span class="k">class</span> <span class="nc">DatesTimes</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class gets today&#39;s date and times.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="DatesTimes.suffix"><a class="viewcode-back" href="../code.html#trainline.DatesTimes.suffix">[docs]</a>    <span class="k">def</span> <span class="nf">suffix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the suffix based on the day. Eg 9th of October, or</span>
+<span class="sd">        3rd of December.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        d: int, the day param.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        The correct suffix based on the day param input.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;th&quot;</span> <span class="k">if</span> <span class="mi">11</span> <span class="o">&lt;=</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="mi">13</span> <span class="k">else</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;st&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;nd&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;rd&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">d</span> <span class="o">%</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;th&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatesTimes.custom_strftime"><a class="viewcode-back" href="../code.html#trainline.DatesTimes.custom_strftime">[docs]</a>    <span class="k">def</span> <span class="nf">custom_strftime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">format</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">datetime</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a custom suffix after the day.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        format: str, the format of the time.</span>
+<span class="sd">        t: the datetime object.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="nb">format</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">{S}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">day</span><span class="p">)</span> <span class="o">+</span> <span class="n">DatesTimes</span><span class="p">()</span><span class="o">.</span><span class="n">suffix</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="CRSNames"><a class="viewcode-back" href="../code.html#trainline.CRSNames">[docs]</a><span class="k">class</span> <span class="nc">CRSNames</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class retrieves the CRS name for a station based on the website:</span>
+<span class="sd">    https://www.nationalrail.co.uk/stations_destinations/48541.aspx</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="CRSNames.make_station_dataframe"><a class="viewcode-back" href="../code.html#trainline.CRSNames.make_station_dataframe">[docs]</a>    <span class="k">def</span> <span class="nf">make_station_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initiates a request and returns a dataframe with station names and their crs</span>
+<span class="sd">        codes.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        url: str, the url from which the data is to be retrieved.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A pandas dataframe.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Initiate the request</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="s2">&quot;Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.75 Safari/537.36&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;X-Requested-With&quot;</span><span class="p">:</span> <span class="s2">&quot;XMLHttpRequest&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">header</span><span class="p">)</span>
+
+        <span class="c1"># Construct the dataframe</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">text</span><span class="p">)[</span><span class="mi">5</span><span class="p">]</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="CRSNames.get_station_list"><a class="viewcode-back" href="../code.html#trainline.CRSNames.get_station_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_station_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of stations from the pandas dataframe input, made from the</span>
+<span class="sd">        make_station_dataframe func.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        df: a pandas dataframe input, made from the func make_station_dataframe.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A list of station names.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Station Name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="CRSNames.make_crs_dict"><a class="viewcode-back" href="../code.html#trainline.CRSNames.make_crs_dict">[docs]</a>    <span class="k">def</span> <span class="nf">make_crs_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Makes a dictionary of station names in the UK and their respective CRS apps.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        url: str, the url from which the data is to be retrieved.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A dictionary of the station names and crs codes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Initiate the request and construct dataframe</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">CRSNames</span><span class="p">()</span><span class="o">.</span><span class="n">make_station_dataframe</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">)</span>
+
+        <span class="c1"># Make lists</span>
+        <span class="n">station_names</span> <span class="o">=</span> <span class="n">CRSNames</span><span class="p">()</span><span class="o">.</span><span class="n">get_station_list</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
+        <span class="n">crs_codes</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;CRS Code&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Construct the dictionary</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">station_names</span><span class="p">,</span> <span class="n">crs_codes</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="CRSNames.lookup_crs_name"><a class="viewcode-back" href="../code.html#trainline.CRSNames.lookup_crs_name">[docs]</a>    <span class="k">def</span> <span class="nf">lookup_crs_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">crs_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Looks up the crs name based on the station param.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        station: str, the name of the station to look up.</span>
+<span class="sd">        crs_dict: dict, the dictionary of station names and crs codes.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A string with the crs apps of the station name specified.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">crs_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">station</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;No CRS apps found&quot;</span></div></div>
+
+
+<div class="viewcode-block" id="TrainInformation"><a class="viewcode-back" href="../code.html#trainline.TrainInformation">[docs]</a><span class="k">class</span> <span class="nc">TrainInformation</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class initiates the SOAP client, creates the appropriate headers and gets all the relevant train</span>
+<span class="sd">    information.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="TrainInformation.make_data_dict"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.make_data_dict">[docs]</a>    <span class="k">def</span> <span class="nf">make_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Makes a dictionary of the data to be passed off to the</span>
+<span class="sd">        SOAP API.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        station: str, the name of the station to look up.</span>
+<span class="sd">        url: str, the url to get CRS codes for stations.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A dictionary to be passed to the API.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">crs_dict</span> <span class="o">=</span> <span class="n">CRSNames</span><span class="p">()</span><span class="o">.</span><span class="n">make_crs_dict</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">crs_code</span> <span class="o">=</span> <span class="n">CRSNames</span><span class="p">()</span><span class="o">.</span><span class="n">lookup_crs_name</span><span class="p">(</span><span class="n">station</span><span class="o">=</span><span class="n">station</span><span class="p">,</span> <span class="n">crs_dict</span><span class="o">=</span><span class="n">crs_dict</span><span class="p">)</span>
+        <span class="n">data_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;numRows&quot;</span><span class="p">:</span> <span class="s2">&quot;10&quot;</span><span class="p">,</span> <span class="s2">&quot;crs&quot;</span><span class="p">:</span> <span class="n">crs_code</span><span class="p">,</span> <span class="s2">&quot;filterType&quot;</span><span class="p">:</span> <span class="s2">&quot;from&quot;</span><span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">data_dict</span></div>
+
+<div class="viewcode-block" id="TrainInformation.initiate_client"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.initiate_client">[docs]</a>    <span class="k">def</span> <span class="nf">initiate_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initiates the SOAP client using the url param.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        url: str, the url of the SOAP API to be initiated.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        An initiated client, ready to parse SOAP API requests.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Client</span><span class="p">(</span><span class="n">url</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TrainInformation.create_soap_headers"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.create_soap_headers">[docs]</a>    <span class="k">def</span> <span class="nf">create_soap_headers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates the headers needed to initialise the SOAP API request.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        token: str, the token needed for the request.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;AccessToken&quot;</span><span class="p">:</span> <span class="n">token</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="TrainInformation.create_response"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.create_response">[docs]</a>    <span class="k">def</span> <span class="nf">create_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">soap_headers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">client</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates the response from the API using the soap_headers param and the data param.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data: dict, a dict of data to be passed off.</span>
+<span class="sd">        soap_headers: dict, the soap headers to be passed off.</span>
+<span class="sd">        client: the SOAP client, initiated using the func initiate_client.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A response with the data requested,.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">GetArrDepBoardWithDetails</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">data</span><span class="p">,</span> <span class="n">_soapheaders</span><span class="o">=</span><span class="n">soap_headers</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TrainInformation.check_api_status"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.check_api_status">[docs]</a>    <span class="k">def</span> <span class="nf">check_api_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks the status of the API call by evaluating the response dict created</span>
+<span class="sd">        from the func create_response.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        response: the param created via the func create_response.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A bool, either True if the API connection is successful, False if there</span>
+<span class="sd">        is a problem.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TrainInformation.get_primary_message"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.get_primary_message">[docs]</a>    <span class="k">def</span> <span class="nf">get_primary_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the primary messages from the API call.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        response: the param created via the func create_response.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A string an</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Parse the response via Beautiful Soup</span>
+            <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span>
+                <span class="n">response</span><span class="p">[</span><span class="s2">&quot;nrccMessages&quot;</span><span class="p">][</span><span class="s2">&quot;message&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;_value_1&quot;</span><span class="p">],</span> <span class="s2">&quot;html.parser&quot;</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Make a message string</span>
+            <span class="n">message_str</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Make a list of any links</span>
+            <span class="n">links</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">):</span>
+                <span class="n">links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">link</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;href&quot;</span><span class="p">))</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">message_str</span> <span class="o">=</span> <span class="s2">&quot;No message&quot;</span>
+            <span class="n">links</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">return</span> <span class="n">message_str</span><span class="p">,</span> <span class="n">links</span></div>
+
+<div class="viewcode-block" id="TrainInformation.get_service"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.get_service">[docs]</a>    <span class="k">def</span> <span class="nf">get_service</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of services using the response param created.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        response: the param created via the func create_response.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;trainServices&quot;</span><span class="p">][</span><span class="s2">&quot;service&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TrainInformation.get_closest_service"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.get_closest_service">[docs]</a>    <span class="k">def</span> <span class="nf">get_closest_service</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a service using the response param created.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        response: the param created via the func create_response.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A service ready to be parsed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;trainServices&quot;</span><span class="p">][</span><span class="s2">&quot;service&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TrainInformation.get_starting_time"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.get_starting_time">[docs]</a>    <span class="k">def</span> <span class="nf">get_starting_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the starting time of the train.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        service: dict, created from the response param.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A str of the starting time.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">service</span><span class="p">[</span><span class="s2">&quot;sta&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TrainInformation.get_status"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the status of the train.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        service: dict, created from the response param.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A str of the status.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">service</span><span class="p">[</span><span class="s2">&quot;eta&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TrainInformation.get_platform_number"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.get_platform_number">[docs]</a>    <span class="k">def</span> <span class="nf">get_platform_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the platform number of the train.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        service: dict, created from the response param.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        The platform number of the train.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">service</span><span class="p">[</span><span class="s2">&quot;platform&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TrainInformation.get_train_operator"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.get_train_operator">[docs]</a>    <span class="k">def</span> <span class="nf">get_train_operator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the train operator the departing train.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        service: dict, created from the response param.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        The operator of the departing train.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">service</span><span class="p">[</span><span class="s2">&quot;operator&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TrainInformation.get_origin_name"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.get_origin_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_origin_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the name of the origin station.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        service: dict, created from the response param.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        The name of the origin station.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">service</span><span class="p">[</span><span class="s2">&quot;origin&quot;</span><span class="p">][</span><span class="s2">&quot;location&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;locationName&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TrainInformation.get_destination"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.get_destination">[docs]</a>    <span class="k">def</span> <span class="nf">get_destination</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the name of the destination station.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        service: dict, created from the response param.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        The name of the destination station.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">service</span><span class="p">[</span><span class="s2">&quot;destination&quot;</span><span class="p">][</span><span class="s2">&quot;location&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;locationName&quot;</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">check_train_cancellation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">cancellation_status</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="s1">&#39;isCancelled&#39;</span><span class="p">]</span>
+        <span class="n">cancel_reason</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="s1">&#39;cancelReason&#39;</span><span class="p">]</span>
+        <span class="n">delay_reason</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="s1">&#39;delayReason&#39;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">cancellation_status</span><span class="p">,</span> <span class="n">cancel_reason</span><span class="p">,</span> <span class="n">delay_reason</span>
+
+<div class="viewcode-block" id="TrainInformation.calling_points"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.calling_points">[docs]</a>    <span class="k">def</span> <span class="nf">calling_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the calling points based on the _type param.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        service: dict, created from the response param.</span>
+<span class="sd">        _type: str, can be &#39;previousCallingPoints&#39; or &#39;subsequentCallingPoints&#39;.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A list of calling point stations.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if there is a cancellation/delay</span>
+        <span class="n">initiate_calling_points</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="n">_type</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">initiate_calling_points</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cancellation_status</span><span class="p">,</span> <span class="n">cancel_reason</span><span class="p">,</span> <span class="n">delay_reason</span> <span class="o">=</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">check_train_cancellation</span><span class="p">(</span>
+                <span class="n">service</span><span class="o">=</span><span class="n">service</span>
+            <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">cancel_reason</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">calling_points</span> <span class="o">=</span> <span class="n">initiate_calling_points</span><span class="p">[</span><span class="s2">&quot;callingPointList&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;callingPoint&quot;</span><span class="p">]</span>
+
+            <span class="n">calling_point_stations</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">calling_point</span> <span class="ow">in</span> <span class="n">calling_points</span><span class="p">:</span>
+                <span class="n">location_name</span> <span class="o">=</span> <span class="n">calling_point</span><span class="p">[</span><span class="s2">&quot;locationName&quot;</span><span class="p">]</span>
+                <span class="n">calling_point_stations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">location_name</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">calling_point_stations</span></div>
+
+<div class="viewcode-block" id="TrainInformation.calling_times"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.calling_times">[docs]</a>    <span class="k">def</span> <span class="nf">calling_times</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the times of the calling points based on the _type param.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        service: dict, created from the response param.</span>
+<span class="sd">        _type: str, can be &#39;previousCallingPoints&#39; or &#39;subsequentCallingPoints&#39;.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A list of the calling point times.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if there is a cancellation/delay</span>
+        <span class="n">initiate_calling_points</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="n">_type</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">initiate_calling_points</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cancellation_status</span><span class="p">,</span> <span class="n">cancel_reason</span><span class="p">,</span> <span class="n">delay_reason</span> <span class="o">=</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">check_train_cancellation</span><span class="p">(</span>
+                <span class="n">service</span><span class="o">=</span><span class="n">service</span>
+            <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">cancel_reason</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">calling_points</span> <span class="o">=</span> <span class="n">initiate_calling_points</span><span class="p">[</span><span class="s2">&quot;callingPointList&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;callingPoint&quot;</span><span class="p">]</span>
+
+            <span class="n">calling_point_times</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">calling_point</span> <span class="ow">in</span> <span class="n">calling_points</span><span class="p">:</span>
+                <span class="n">time</span> <span class="o">=</span> <span class="n">calling_point</span><span class="p">[</span><span class="s2">&quot;st&quot;</span><span class="p">]</span>
+                <span class="n">calling_point_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">calling_point_times</span></div>
+
+<div class="viewcode-block" id="TrainInformation.calling_status"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.calling_status">[docs]</a>    <span class="k">def</span> <span class="nf">calling_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the status of the calling points based ont eh _type param.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        service: dict, created from the response param.</span>
+<span class="sd">        _type: str, can be &#39;previousCallingPoints&#39; or &#39;subsequentCallingPoints&#39;.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A list of the calling point status.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if there is a cancellation/delay</span>
+        <span class="n">initiate_calling_points</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="n">_type</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">initiate_calling_points</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cancellation_status</span><span class="p">,</span> <span class="n">cancel_reason</span><span class="p">,</span> <span class="n">delay_reason</span> <span class="o">=</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">check_train_cancellation</span><span class="p">(</span>
+                <span class="n">service</span><span class="o">=</span><span class="n">service</span>
+            <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">cancel_reason</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">calling_points</span> <span class="o">=</span> <span class="n">initiate_calling_points</span><span class="p">[</span><span class="s2">&quot;callingPointList&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;callingPoint&quot;</span><span class="p">]</span>
+
+            <span class="n">calling_point_status</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">calling_point</span> <span class="ow">in</span> <span class="n">calling_points</span><span class="p">:</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="n">calling_point</span><span class="p">[</span><span class="s2">&quot;et&quot;</span><span class="p">]</span>
+                <span class="n">calling_point_status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">calling_point_status</span></div>
+
+<div class="viewcode-block" id="TrainInformation.make_traintimes_dict"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.make_traintimes_dict">[docs]</a>    <span class="k">def</span> <span class="nf">make_traintimes_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">station</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Makes a dictionary of the train times.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        service: dict, created from the response param.</span>
+<span class="sd">        station: the name of the station.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A dictionary of the train times and all the relevant information.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">handle_eta_key</span><span class="p">():</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Handles the ETA key creation. If there is a cancellation, then this</span>
+<span class="sd">            is handled so that the cancellation message is returned.</span>
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            A string, with either the ETA or the reason for cancellation/delay.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">eta</span> <span class="o">=</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">calling_times</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="s2">&quot;subsequentCallingPoints&quot;</span><span class="p">)</span>
+            <span class="n">check_list</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">check_list</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">eta</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">eta</span>
+
+        <span class="n">df_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Station&quot;</span><span class="p">:</span> <span class="n">station</span><span class="p">,</span>
+            <span class="s2">&quot;Origin&quot;</span><span class="p">:</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">get_origin_name</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">),</span>
+            <span class="s2">&quot;Destination&quot;</span><span class="p">:</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">get_destination</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">),</span>
+            <span class="s2">&quot;Starting_Time&quot;</span><span class="p">:</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">get_starting_time</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">),</span>
+            <span class="s2">&quot;ETA&quot;</span><span class="p">:</span> <span class="n">handle_eta_key</span><span class="p">(),</span>
+            <span class="s2">&quot;Status&quot;</span><span class="p">:</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">get_status</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">),</span>
+            <span class="s2">&quot;Platform&quot;</span><span class="p">:</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">get_platform_number</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">),</span>
+            <span class="s2">&quot;Operator&quot;</span><span class="p">:</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">get_train_operator</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">df_dict</span></div>
+
+<div class="viewcode-block" id="TrainInformation.make_calling_times_df"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.make_calling_times_df">[docs]</a>    <span class="k">def</span> <span class="nf">make_calling_times_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Makes a dataframe of the calling station, times and statuses.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        service: dict, created from the response param.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A dictionary of the subsequent calling points and the relevant information.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Initiate the dataframe</span>
+        <span class="n">df_calling_points</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Calling_At&quot;</span><span class="p">,</span> <span class="s2">&quot;Time&quot;</span><span class="p">,</span> <span class="s2">&quot;Status&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Get all the information</span>
+        <span class="n">df_calling_points</span><span class="p">[</span><span class="s2">&quot;Calling_At&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">calling_points</span><span class="p">(</span>
+            <span class="n">service</span><span class="p">,</span> <span class="s2">&quot;subsequentCallingPoints&quot;</span>
+        <span class="p">)</span>
+        <span class="n">df_calling_points</span><span class="p">[</span><span class="s2">&quot;Time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">calling_times</span><span class="p">(</span>
+            <span class="n">service</span><span class="p">,</span> <span class="s2">&quot;subsequentCallingPoints&quot;</span>
+        <span class="p">)</span>
+        <span class="n">df_calling_points</span><span class="p">[</span><span class="s2">&quot;Status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">calling_status</span><span class="p">(</span>
+            <span class="n">service</span><span class="p">,</span> <span class="s2">&quot;subsequentCallingPoints&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">df_calling_points</span></div>
+
+<div class="viewcode-block" id="TrainInformation.get_latest_departures_df"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.get_latest_departures_df">[docs]</a>    <span class="k">def</span> <span class="nf">get_latest_departures_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                 <span class="n">services</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+                                 <span class="n">station</span><span class="p">:</span> <span class="nb">str</span>
+                                 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the latest number of departures based on the API call.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        services: dict, the dictionary constructed from the API call.</span>
+<span class="sd">        station: str, the name of the station.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A pandas dataframe with the latest trains and their destinations.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">services</span><span class="p">:</span>
+            <span class="n">train_dict</span> <span class="o">=</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">make_traintimes_dict</span><span class="p">(</span>
+                <span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">station</span>
+            <span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">train_dict</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s2">&quot;index&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">df_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">df_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Traintimes 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">trainline</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, Aniruddha Sengupta.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>
