@@ -54,6 +54,24 @@
 <dd><p>Class retrieves the CRS name for a station based on the website:
 <a class="reference external" href="https://www.nationalrail.co.uk/stations_destinations/48541.aspx">https://www.nationalrail.co.uk/stations_destinations/48541.aspx</a></p>
 <dl class="py method">
+<dt id="trainline.CRSNames.get_station_list">
+<code class="sig-name descname">get_station_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span></em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="_modules/trainline.html#CRSNames.get_station_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#trainline.CRSNames.get_station_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of stations from the pandas dataframe input, made from the
+make_station_dataframe func.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>a pandas dataframe input</em><em>, </em><em>made from the func make_station_dataframe.</em>) -- </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A list of station names.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="trainline.CRSNames.lookup_crs_name">
 <code class="sig-name descname">lookup_crs_name</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">station</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">crs_dict</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/trainline.html#CRSNames.lookup_crs_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#trainline.CRSNames.lookup_crs_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Looks up the crs name based on the station param.</p>
@@ -86,6 +104,24 @@
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>A dictionary of the station names and crs codes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="trainline.CRSNames.make_station_dataframe">
+<code class="sig-name descname">make_station_dataframe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; pandas.core.frame.DataFrame<a class="reference internal" href="_modules/trainline.html#CRSNames.make_station_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#trainline.CRSNames.make_station_dataframe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initiates a request and returns a dataframe with station names and their crs
+codes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>url</strong> (<em>str</em><em>, </em><em>the url from which the data is to be retrieved.</em>) -- </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A pandas dataframe.</p>
 </dd>
 </dl>
 </dd></dl>

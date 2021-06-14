@@ -6,6 +6,8 @@
 Traintimes documentation
 ========================
 
+This is the documentation of the Traintimes dashboard.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:

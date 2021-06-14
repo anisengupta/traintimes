@@ -3,10 +3,11 @@ Guide
 The Traintimes repository contains code that creates a dashboard that retrieves the latest departures,
 status and calling stations based on a specified station. The inspiration for this project came recently, as things
 in the UK are opening up more and more from Covid-19, we find ourselves planning and going on more and more train journeys.
+I was on my way to meeting some friends when I thought; wouldn't it be great
+if I had a version of the live train information in my home that updates itself?
 
 One of the pre-requisite steps for this is to go online (https://www.thetrainline.com/) to see the latest train times,
-departures and other information. I was on my way to meeting some friends when I thought; wouldn't it be great
-if I had a version of the live train information in my home that updates itself?
+departures and other information.
 
 This project relies on the Live Departure Boards Web Service (LDBWS) API from National Rail
 (https://lite.realtime.nationalrail.co.uk/OpenLDBWS/). This is a SOAP API which provides real time access to train
