@@ -61,9 +61,10 @@ class CRSNames:
     def __init__(self):
         pass
 
-    def make_crs_dict(self, url: str) -> dict:
+    def make_station_dataframe(self, url: str) -> pd.DataFrame:
         """
-        Makes a dictionary of station names in the UK and their respective CRS apps.
+        Initiates a request and returns a dataframe with station names and their crs
+        codes.
 
         Parameters
         ----------
@@ -71,7 +72,7 @@ class CRSNames:
 
         Returns
         -------
-        A dictionary of the station names and crs codes.
+        A pandas dataframe.
 
         """
         # Initiate the request
@@ -87,8 +88,42 @@ class CRSNames:
         df.columns = df.iloc[0]
         df = df.drop(df.index[0])
 
+        return df
+
+    def get_station_list(self, df: pd.DataFrame) -> list:
+        """
+        Returns a list of stations from the pandas dataframe input, made from the
+        make_station_dataframe func.
+
+        Parameters
+        ----------
+        df: a pandas dataframe input, made from the func make_station_dataframe.
+
+        Returns
+        -------
+        A list of station names.
+
+        """
+        return df["Station Name"].unique().tolist()
+
+    def make_crs_dict(self, url: str) -> dict:
+        """
+        Makes a dictionary of station names in the UK and their respective CRS apps.
+
+        Parameters
+        ----------
+        url: str, the url from which the data is to be retrieved.
+
+        Returns
+        -------
+        A dictionary of the station names and crs codes.
+
+        """
+        # Initiate the request and construct dataframe
+        df = CRSNames().make_station_dataframe(url=url)
+
         # Make lists
-        station_names = df["Station Name"]
+        station_names = CRSNames().get_station_list(df=df)
         crs_codes = df["CRS Code"]
 
         # Construct the dictionary
