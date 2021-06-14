@@ -175,7 +175,7 @@ information.</p>
 
 <dl class="py method">
 <dt id="trainline.TrainInformation.calling_times">
-<code class="sig-name descname">calling_times</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">service</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">_type</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="_modules/trainline.html#TrainInformation.calling_times"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#trainline.TrainInformation.calling_times" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calling_times</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">service</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">_type</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trainline.html#TrainInformation.calling_times"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#trainline.TrainInformation.calling_times" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the times of the calling points based on the _type param.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -280,11 +280,14 @@ from the func create_response.</p>
 
 <dl class="py method">
 <dt id="trainline.TrainInformation.get_latest_departures_df">
-<code class="sig-name descname">get_latest_departures_df</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">services</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span> &#x2192; pandas.core.frame.DataFrame<a class="reference internal" href="_modules/trainline.html#TrainInformation.get_latest_departures_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#trainline.TrainInformation.get_latest_departures_df" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_latest_departures_df</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">services</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">station</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; pandas.core.frame.DataFrame<a class="reference internal" href="_modules/trainline.html#TrainInformation.get_latest_departures_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#trainline.TrainInformation.get_latest_departures_df" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the latest number of departures based on the API call.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>services</strong> (<em>dict</em><em>, </em><em>the dictionary constructed from the API call.</em>) -- </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>services</strong> (<em>dict</em><em>, </em><em>the dictionary constructed from the API call.</em>) -- </p></li>
+<li><p><strong>station</strong> (<em>str</em><em>, </em><em>the name of the station.</em>) -- </p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p></p>

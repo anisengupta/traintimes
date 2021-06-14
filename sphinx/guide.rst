@@ -2,11 +2,12 @@ Guide
 ==================
 The Traintimes repository contains code that creates a dashboard that retrieves the latest departures,
 status and calling stations based on a specified station. The inspiration for this project came recently, as things
-in the UK are opening up more and more, we find ourselves planning and going on more and more train journeys.
+in the UK are opening up more and more from Covid-19, we find ourselves planning and going on more and more train journeys.
+I was on my way to meeting some friends when I thought; wouldn't it be great
+if I had a version of the live train information in my home that updates itself?
 
 One of the pre-requisite steps for this is to go online (https://www.thetrainline.com/) to see the latest train times,
-departures and other information. I was on my way to meeting some friends when I thought; wouldn't it be great
-if I had a version of the live train information in my home that updates itself?
+departures and other information.
 
 This project relies on the Live Departure Boards Web Service (LDBWS) API from National Rail
 (https://lite.realtime.nationalrail.co.uk/OpenLDBWS/). This is a SOAP API which provides real time access to train
@@ -84,13 +85,18 @@ will fire a callback to a period we specify. Currently for this dashboard, all f
 configured to refresh every half an hour.
 
 This dashboard is not just configured to the station *Downham Market*, we can choose any station of our liking
-(in the UK). All we need to do si update the *config.py* file:
+(in the UK). All we need to do is click on the *Change Station* button at the end of the page:
 
-.. image:: ../images/config_file.png
+.. image:: ../images/change_station_button.png
 
-And the codebase should handle this automatically:
+| This will open a modal like so:
+
+.. image:: ../images/change_station_modal.png
+
+| And once we will out the station name input and press the *Submit* button, the changes will take place automatically:
 
 .. image:: ../images/dashboard_alternative_station.png
+
 
 
 

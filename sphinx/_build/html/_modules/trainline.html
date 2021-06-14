@@ -52,7 +52,6 @@
 <span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">config</span> <span class="kn">import</span> <span class="n">STATION</span>
 
 <span class="c1"># Functions for getting all data via the LDBWS API (https://lite.realtime.nationalrail.co.uk/OpenLDBWS/)</span>
 <div class="viewcode-block" id="DatesTimes"><a class="viewcode-back" href="../code.html#trainline.DatesTimes">[docs]</a><span class="k">class</span> <span class="nc">DatesTimes</span><span class="p">:</span>
@@ -408,6 +407,13 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">service</span><span class="p">[</span><span class="s2">&quot;destination&quot;</span><span class="p">][</span><span class="s2">&quot;location&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;locationName&quot;</span><span class="p">]</span></div>
 
+    <span class="k">def</span> <span class="nf">check_train_cancellation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">cancellation_status</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="s1">&#39;isCancelled&#39;</span><span class="p">]</span>
+        <span class="n">cancel_reason</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="s1">&#39;cancelReason&#39;</span><span class="p">]</span>
+        <span class="n">delay_reason</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="s1">&#39;delayReason&#39;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">cancellation_status</span><span class="p">,</span> <span class="n">cancel_reason</span><span class="p">,</span> <span class="n">delay_reason</span>
+
 <div class="viewcode-block" id="TrainInformation.calling_points"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.calling_points">[docs]</a>    <span class="k">def</span> <span class="nf">calling_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the calling points based on the _type param.</span>
@@ -422,17 +428,27 @@
 <span class="sd">        A list of calling point stations.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">calling_points</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="n">_type</span><span class="p">][</span><span class="s2">&quot;callingPointList&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;callingPoint&quot;</span><span class="p">]</span>
+        <span class="c1"># Check if there is a cancellation/delay</span>
+        <span class="n">initiate_calling_points</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="n">_type</span><span class="p">]</span>
 
-        <span class="n">calling_point_stations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">initiate_calling_points</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cancellation_status</span><span class="p">,</span> <span class="n">cancel_reason</span><span class="p">,</span> <span class="n">delay_reason</span> <span class="o">=</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">check_train_cancellation</span><span class="p">(</span>
+                <span class="n">service</span><span class="o">=</span><span class="n">service</span>
+            <span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">calling_point</span> <span class="ow">in</span> <span class="n">calling_points</span><span class="p">:</span>
-            <span class="n">location_name</span> <span class="o">=</span> <span class="n">calling_point</span><span class="p">[</span><span class="s2">&quot;locationName&quot;</span><span class="p">]</span>
-            <span class="n">calling_point_stations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">location_name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">cancel_reason</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">calling_points</span> <span class="o">=</span> <span class="n">initiate_calling_points</span><span class="p">[</span><span class="s2">&quot;callingPointList&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;callingPoint&quot;</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">calling_point_stations</span></div>
+            <span class="n">calling_point_stations</span> <span class="o">=</span> <span class="p">[]</span>
 
-<div class="viewcode-block" id="TrainInformation.calling_times"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.calling_times">[docs]</a>    <span class="k">def</span> <span class="nf">calling_times</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">calling_point</span> <span class="ow">in</span> <span class="n">calling_points</span><span class="p">:</span>
+                <span class="n">location_name</span> <span class="o">=</span> <span class="n">calling_point</span><span class="p">[</span><span class="s2">&quot;locationName&quot;</span><span class="p">]</span>
+                <span class="n">calling_point_stations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">location_name</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">calling_point_stations</span></div>
+
+<div class="viewcode-block" id="TrainInformation.calling_times"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.calling_times">[docs]</a>    <span class="k">def</span> <span class="nf">calling_times</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the times of the calling points based on the _type param.</span>
 
@@ -446,15 +462,25 @@
 <span class="sd">        A list of the calling point times.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">calling_points</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="n">_type</span><span class="p">][</span><span class="s2">&quot;callingPointList&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;callingPoint&quot;</span><span class="p">]</span>
+        <span class="c1"># Check if there is a cancellation/delay</span>
+        <span class="n">initiate_calling_points</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="n">_type</span><span class="p">]</span>
 
-        <span class="n">calling_point_times</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">initiate_calling_points</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cancellation_status</span><span class="p">,</span> <span class="n">cancel_reason</span><span class="p">,</span> <span class="n">delay_reason</span> <span class="o">=</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">check_train_cancellation</span><span class="p">(</span>
+                <span class="n">service</span><span class="o">=</span><span class="n">service</span>
+            <span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">calling_point</span> <span class="ow">in</span> <span class="n">calling_points</span><span class="p">:</span>
-            <span class="n">time</span> <span class="o">=</span> <span class="n">calling_point</span><span class="p">[</span><span class="s2">&quot;st&quot;</span><span class="p">]</span>
-            <span class="n">calling_point_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">cancel_reason</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">calling_points</span> <span class="o">=</span> <span class="n">initiate_calling_points</span><span class="p">[</span><span class="s2">&quot;callingPointList&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;callingPoint&quot;</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">calling_point_times</span></div>
+            <span class="n">calling_point_times</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">calling_point</span> <span class="ow">in</span> <span class="n">calling_points</span><span class="p">:</span>
+                <span class="n">time</span> <span class="o">=</span> <span class="n">calling_point</span><span class="p">[</span><span class="s2">&quot;st&quot;</span><span class="p">]</span>
+                <span class="n">calling_point_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">calling_point_times</span></div>
 
 <div class="viewcode-block" id="TrainInformation.calling_status"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.calling_status">[docs]</a>    <span class="k">def</span> <span class="nf">calling_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -469,15 +495,25 @@
 <span class="sd">        A list of the calling point status.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">calling_points</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="n">_type</span><span class="p">][</span><span class="s2">&quot;callingPointList&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;callingPoint&quot;</span><span class="p">]</span>
+        <span class="c1"># Check if there is a cancellation/delay</span>
+        <span class="n">initiate_calling_points</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="n">_type</span><span class="p">]</span>
 
-        <span class="n">calling_point_status</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">initiate_calling_points</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cancellation_status</span><span class="p">,</span> <span class="n">cancel_reason</span><span class="p">,</span> <span class="n">delay_reason</span> <span class="o">=</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">check_train_cancellation</span><span class="p">(</span>
+                <span class="n">service</span><span class="o">=</span><span class="n">service</span>
+            <span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">calling_point</span> <span class="ow">in</span> <span class="n">calling_points</span><span class="p">:</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="n">calling_point</span><span class="p">[</span><span class="s2">&quot;et&quot;</span><span class="p">]</span>
-            <span class="n">calling_point_status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">cancel_reason</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">calling_points</span> <span class="o">=</span> <span class="n">initiate_calling_points</span><span class="p">[</span><span class="s2">&quot;callingPointList&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;callingPoint&quot;</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">calling_point_status</span></div>
+            <span class="n">calling_point_status</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">calling_point</span> <span class="ow">in</span> <span class="n">calling_points</span><span class="p">:</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="n">calling_point</span><span class="p">[</span><span class="s2">&quot;et&quot;</span><span class="p">]</span>
+                <span class="n">calling_point_status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">calling_point_status</span></div>
 
 <div class="viewcode-block" id="TrainInformation.make_traintimes_dict"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.make_traintimes_dict">[docs]</a>    <span class="k">def</span> <span class="nf">make_traintimes_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">station</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -493,14 +529,30 @@
 <span class="sd">        A dictionary of the train times and all the relevant information.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">handle_eta_key</span><span class="p">():</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Handles the ETA key creation. If there is a cancellation, then this</span>
+<span class="sd">            is handled so that the cancellation message is returned.</span>
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            A string, with either the ETA or the reason for cancellation/delay.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">eta</span> <span class="o">=</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">calling_times</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="s2">&quot;subsequentCallingPoints&quot;</span><span class="p">)</span>
+            <span class="n">check_list</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">check_list</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">eta</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">eta</span>
+
         <span class="n">df_dict</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;Station&quot;</span><span class="p">:</span> <span class="n">station</span><span class="p">,</span>
             <span class="s2">&quot;Origin&quot;</span><span class="p">:</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">get_origin_name</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">),</span>
             <span class="s2">&quot;Destination&quot;</span><span class="p">:</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">get_destination</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">),</span>
             <span class="s2">&quot;Starting_Time&quot;</span><span class="p">:</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">get_starting_time</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">),</span>
-            <span class="s2">&quot;ETA&quot;</span><span class="p">:</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">calling_times</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="s2">&quot;subsequentCallingPoints&quot;</span><span class="p">)[</span>
-                <span class="o">-</span><span class="mi">1</span>
-            <span class="p">],</span>
+            <span class="s2">&quot;ETA&quot;</span><span class="p">:</span> <span class="n">handle_eta_key</span><span class="p">(),</span>
             <span class="s2">&quot;Status&quot;</span><span class="p">:</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">get_status</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">),</span>
             <span class="s2">&quot;Platform&quot;</span><span class="p">:</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">get_platform_number</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">),</span>
             <span class="s2">&quot;Operator&quot;</span><span class="p">:</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">get_train_operator</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">),</span>
@@ -537,13 +589,17 @@
 
         <span class="k">return</span> <span class="n">df_calling_points</span></div>
 
-<div class="viewcode-block" id="TrainInformation.get_latest_departures_df"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.get_latest_departures_df">[docs]</a>    <span class="k">def</span> <span class="nf">get_latest_departures_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">services</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<div class="viewcode-block" id="TrainInformation.get_latest_departures_df"><a class="viewcode-back" href="../code.html#trainline.TrainInformation.get_latest_departures_df">[docs]</a>    <span class="k">def</span> <span class="nf">get_latest_departures_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                 <span class="n">services</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+                                 <span class="n">station</span><span class="p">:</span> <span class="nb">str</span>
+                                 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the latest number of departures based on the API call.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        services: dict, the dictionary constructed from the API call.</span>
+<span class="sd">        station: str, the name of the station.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -554,12 +610,13 @@
 
         <span class="k">for</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">services</span><span class="p">:</span>
             <span class="n">train_dict</span> <span class="o">=</span> <span class="n">TrainInformation</span><span class="p">()</span><span class="o">.</span><span class="n">make_traintimes_dict</span><span class="p">(</span>
-                <span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">STATION</span>
+                <span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">station</span>
             <span class="p">)</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">train_dict</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s2">&quot;index&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
             <span class="n">df_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">df_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div></div>
+
 </pre></div>
 
             <div class="clearer"></div>

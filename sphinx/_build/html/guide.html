@@ -54,7 +54,7 @@
 <h1>Guide<a class="headerlink" href="#guide" title="Permalink to this headline">¶</a></h1>
 <p>The Traintimes repository contains code that creates a dashboard that retrieves the latest departures,
 status and calling stations based on a specified station. The inspiration for this project came recently, as things
-in the UK are opening up more and more, we find ourselves planning and going on more and more train journeys.</p>
+in the UK are opening up more and more from Covid-19, we find ourselves planning and going on more and more train journeys.</p>
 <p>One of the pre-requisite steps for this is to go online (<a class="reference external" href="https://www.thetrainline.com/">https://www.thetrainline.com/</a>) to see the latest train times,
 departures and other information. I was on my way to meeting some friends when I thought; wouldn't it be great
 if I had a version of the live train information in my home that updates itself?</p>
@@ -118,9 +118,15 @@ adjusted:</p>
 will fire a callback to a period we specify. Currently for this dashboard, all features (apart from the time) is
 configured to refresh every half an hour.</p>
 <p>This dashboard is not just configured to the station <em>Downham Market</em>, we can choose any station of our liking
-(in the UK). All we need to do si update the <em>config.py</em> file:</p>
-<img alt="_images/config_file.png" src="_images/config_file.png" />
-<p>And the codebase should handle this automatically:</p>
+(in the UK). All we need to do is click on the <em>Change Station</em> button at the end of the page:</p>
+<img alt="_images/change_station_button.png" src="_images/change_station_button.png" />
+<div class="line-block">
+<div class="line">This will open a modal like so:</div>
+</div>
+<img alt="_images/change_station_modal.png" src="_images/change_station_modal.png" />
+<div class="line-block">
+<div class="line">And once we will out the station name input and press the <em>Submit</em> button, the changes will take place automatically:</div>
+</div>
 <img alt="_images/dashboard_alternative_station.png" src="_images/dashboard_alternative_station.png" />
 </div>
 </div>
