@@ -326,6 +326,14 @@ def generate_station_change_modal():
 
     """
     def generate_options_list() -> list:
+        """
+        Generates a list of dictionaries of options, to be used in a dcc.Dropdown.
+
+        Returns
+        -------
+        A list of dictionaries.
+
+        """
         # Initiate the request and construct dataframe
         stations_df = trainline.CRSNames().make_station_dataframe(url=config.CRS_URL)
 
@@ -349,8 +357,6 @@ def generate_station_change_modal():
                     dbc.ModalBody(
                         dcc.Dropdown(
                             options=generate_options_list(),
-                            value=[],
-                            multi=True,
                             id='change_station_modal_input'
                         ),
 
