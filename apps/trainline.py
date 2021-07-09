@@ -84,7 +84,7 @@ class CRSNames:
         r = requests.get(url, headers=header)
 
         # Construct the dataframe
-        df = pd.read_html(r.text)[5]
+        df = pd.read_html(r.text)[4]
         df.columns = df.iloc[0]
         df = df.drop(df.index[0])
 
