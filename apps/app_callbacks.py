@@ -25,16 +25,16 @@ def prerequisite_process(station: str):
 
     """
     # Initiate the client
-    client = trainline.TrainInformation().initiate_client(url=URL)
+    client = trainline.TrainInformation.initiate_client(url=URL)
 
     # Create the SOAP Headers
-    soap_headers = trainline.TrainInformation().create_soap_headers(token=TOKEN)
+    soap_headers = trainline.TrainInformation.create_soap_headers(token=TOKEN)
 
     # Make the data
-    DATA = trainline.TrainInformation().make_data_dict(station=station, url=CRS_URL)
+    DATA = trainline.TrainInformation.make_data_dict(station=station, url=CRS_URL)
 
     # Initiate the response
-    response = trainline.TrainInformation().create_response(
+    response = trainline.TrainInformation.create_response(
         data=DATA, soap_headers=soap_headers, client=client
     )
 
@@ -133,9 +133,9 @@ def register_app_callbacks(app):
                                                         station_value=station_value)
 
         # Initiate the service
-        services = trainline.TrainInformation().get_service(response=response)
+        services = trainline.TrainInformation.get_service(response=response)
 
-        latest_trains_df = trainline.TrainInformation().get_latest_departures_df(
+        latest_trains_df = trainline.TrainInformation.get_latest_departures_df(
             services=services,
             station=station
         )
@@ -174,11 +174,11 @@ def register_app_callbacks(app):
                                                         station_value=station_value)
 
         # Initiate the service
-        service = trainline.TrainInformation().get_closest_service(response=response)
+        service = trainline.TrainInformation.get_closest_service(response=response)
 
         # Set the calling point dataframe
         calling_points_extra_info_df = (
-            trainline.TrainInformation().make_calling_times_df(service=service)
+            trainline.TrainInformation.make_calling_times_df(service=service)
         )
 
         # Make latest train datatable
@@ -215,7 +215,7 @@ def register_app_callbacks(app):
                                                         station_value=station_value)
 
         return html.Div(
-            trainline.TrainInformation().get_primary_message(response=response)
+            trainline.TrainInformation.get_primary_message(response=response)
         )
 
     @app.callback(
@@ -244,7 +244,7 @@ def register_app_callbacks(app):
                                                         station_value=station_value)
 
         # Evaluate the API status
-        status = trainline.TrainInformation().check_api_status(response=response)
+        status = trainline.TrainInformation.check_api_status(response=response)
 
         if status:
             card_text = "All services running correctly"
@@ -302,7 +302,7 @@ def register_app_callbacks(app):
 
         """
         # Set today's date
-        todays_date = trainline.DatesTimes().custom_strftime("{S}-%B-%Y", datetime.datetime.now())
+        todays_date = trainline.DatesTimes.custom_strftime("{S}-%B-%Y", datetime.datetime.now())
 
         if submit is None:
             station = STATION

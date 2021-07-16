@@ -25,7 +25,7 @@ def make_navbar_title(station: str):
 
     """
     # Set today's date
-    todays_date = trainline.DatesTimes().custom_strftime("{S}-%B-%Y", datetime.now())
+    todays_date = trainline.DatesTimes.custom_strftime("{S}-%B-%Y", datetime.now())
 
     navbar = dbc.NavbarSimple(
         id='title',
@@ -75,7 +75,7 @@ def make_primary_message(response):
     The prime message, if there any to be displayed.
 
     """
-    return trainline.TrainInformation().get_primary_message(response=response)
+    return trainline.TrainInformation.get_primary_message(response=response)
 
 
 def make_primary_message_card():
@@ -244,7 +244,7 @@ def make_calling_points(service: dict) -> list:
     A list of the stations being called at.
 
     """
-    calling_points = trainline.TrainInformation().calling_points(
+    calling_points = trainline.TrainInformation.calling_points(
         service=service, _type="subsequentCallingPoints"
     )
 
@@ -264,7 +264,7 @@ def make_api_status_card():
     response = prerequisite_process(station=config.STATION)
 
     # Evaluate the API status
-    status = trainline.TrainInformation().check_api_status(response=response)
+    status = trainline.TrainInformation.check_api_status(response=response)
 
     # Assign the className of the card accordingly
     if status:
@@ -335,10 +335,10 @@ def generate_station_change_modal():
 
         """
         # Initiate the request and construct dataframe
-        stations_df = trainline.CRSNames().make_station_dataframe(url=config.CRS_URL)
+        stations_df = trainline.CRSNames.make_station_dataframe(url=config.CRS_URL)
 
         # Make a list of stations
-        station_names = trainline.CRSNames().get_station_list(df=stations_df)
+        station_names = trainline.CRSNames.get_station_list(df=stations_df)
 
         # Construct an options dict
         options_list = []

@@ -27,7 +27,7 @@ title = app_layout.make_navbar_title(station=config.STATION)
 response = prerequisite_process(station=config.STATION)
 
 # Initiate the service
-services = trainline.TrainInformation().get_service(response=response)
+services = trainline.TrainInformation.get_service(response=response)
 
 # Set the primary message
 primary_message_title = app_layout.make_primary_message_title()

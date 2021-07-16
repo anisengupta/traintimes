@@ -17,7 +17,8 @@ class DatesTimes:
     def __init__(self):
         pass
 
-    def suffix(self, d: int):
+    @staticmethod
+    def suffix(d: int):
         """
         Returns the suffix based on the day. Eg 9th of October, or
         3rd of December.
@@ -33,7 +34,8 @@ class DatesTimes:
         """
         return "th" if 11 <= d <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(d % 10, "th")
 
-    def custom_strftime(self, format: str, t: datetime):
+    @staticmethod
+    def custom_strftime(format: str, t: datetime):
         """
         Adds a custom suffix after the day.
 
@@ -47,7 +49,7 @@ class DatesTimes:
 
         """
         return t.strftime(format).replace(
-            "{S}", str(t.day) + DatesTimes().suffix(t.day)
+            "{S}", str(t.day) + DatesTimes.suffix(t.day)
         )
 
 
@@ -61,7 +63,8 @@ class CRSNames:
     def __init__(self):
         pass
 
-    def make_station_dataframe(self, url: str) -> pd.DataFrame:
+    @staticmethod
+    def make_station_dataframe(url: str) -> pd.DataFrame:
         """
         Initiates a request and returns a dataframe with station names and their crs
         codes.
@@ -84,13 +87,14 @@ class CRSNames:
         r = requests.get(url, headers=header)
 
         # Construct the dataframe
-        df = pd.read_html(r.text)[4]
+        df = pd.read_html(r.text)[5]
         df.columns = df.iloc[0]
         df = df.drop(df.index[0])
 
         return df
 
-    def get_station_list(self, df: pd.DataFrame) -> list:
+    @staticmethod
+    def get_station_list(df: pd.DataFrame) -> list:
         """
         Returns a list of stations from the pandas dataframe input, made from the
         make_station_dataframe func.
@@ -106,7 +110,8 @@ class CRSNames:
         """
         return df["Station Name"].unique().tolist()
 
-    def make_crs_dict(self, url: str) -> dict:
+    @staticmethod
+    def make_crs_dict(url: str) -> dict:
         """
         Makes a dictionary of station names in the UK and their respective CRS apps.
 
@@ -120,16 +125,17 @@ class CRSNames:
 
         """
         # Initiate the request and construct dataframe
-        df = CRSNames().make_station_dataframe(url=url)
+        df = CRSNames.make_station_dataframe(url=url)
 
         # Make lists
-        station_names = CRSNames().get_station_list(df=df)
+        station_names = CRSNames.get_station_list(df=df)
         crs_codes = df["CRS Code"]
 
         # Construct the dictionary
         return dict(zip(station_names, crs_codes))
 
-    def lookup_crs_name(self, station: str, crs_dict: dict) -> str:
+    @staticmethod
+    def lookup_crs_name(station: str, crs_dict: dict) -> str:
         """
         Looks up the crs name based on the station param.
 
@@ -159,7 +165,8 @@ class TrainInformation:
     def __init__(self):
         pass
 
-    def make_data_dict(self, station: str, url: str):
+    @staticmethod
+    def make_data_dict(station: str, url: str):
         """
         Makes a dictionary of the data to be passed off to the
         SOAP API.
@@ -174,13 +181,14 @@ class TrainInformation:
         A dictionary to be passed to the API.
 
         """
-        crs_dict = CRSNames().make_crs_dict(url=url)
-        crs_code = CRSNames().lookup_crs_name(station=station, crs_dict=crs_dict)
+        crs_dict = CRSNames.make_crs_dict(url=url)
+        crs_code = CRSNames.lookup_crs_name(station=station, crs_dict=crs_dict)
         data_dict = {"numRows": "10", "crs": crs_code, "filterType": "from"}
 
         return data_dict
 
-    def initiate_client(self, url: str):
+    @staticmethod
+    def initiate_client(url: str):
         """
         Initiates the SOAP client using the url param.
 
@@ -195,7 +203,8 @@ class TrainInformation:
         """
         return Client(url)
 
-    def create_soap_headers(self, token: str) -> dict:
+    @staticmethod
+    def create_soap_headers(token: str) -> dict:
         """
         Creates the headers needed to initialise the SOAP API request.
 
@@ -209,7 +218,8 @@ class TrainInformation:
         """
         return {"AccessToken": token}
 
-    def create_response(self, data: dict, soap_headers: dict, client) -> dict:
+    @staticmethod
+    def create_response(data: dict, soap_headers: dict, client) -> dict:
         """
         Creates the response from the API using the soap_headers param and the data param.
 
@@ -228,7 +238,8 @@ class TrainInformation:
             **data, _soapheaders=soap_headers
         )
 
-    def check_api_status(self, response) -> bool:
+    @staticmethod
+    def check_api_status(response) -> bool:
         """
         Checks the status of the API call by evaluating the response dict created
         from the func create_response.
@@ -245,7 +256,8 @@ class TrainInformation:
         """
         return bool(response)
 
-    def get_primary_message(self, response: dict) -> Tuple[Any, list]:
+    @staticmethod
+    def get_primary_message(response: dict) -> Tuple[Any, list]:
         """
         Returns the primary messages from the API call.
 
@@ -277,7 +289,8 @@ class TrainInformation:
 
         return message_str, links
 
-    def get_service(self, response: dict) -> list:
+    @staticmethod
+    def get_service(response: dict) -> list:
         """
         Returns a list of services using the response param created.
 
@@ -291,7 +304,8 @@ class TrainInformation:
         """
         return response["trainServices"]["service"]
 
-    def get_closest_service(self, response: dict) -> dict:
+    @staticmethod
+    def get_closest_service(response: dict) -> dict:
         """
         Returns a service using the response param created.
 
@@ -306,7 +320,8 @@ class TrainInformation:
         """
         return response["trainServices"]["service"][0]
 
-    def get_starting_time(self, service: dict) -> str:
+    @staticmethod
+    def get_starting_time(service: dict) -> str:
         """
         Returns the starting time of the train.
 
@@ -321,7 +336,8 @@ class TrainInformation:
         """
         return service["sta"]
 
-    def get_status(self, service: dict) -> str:
+    @staticmethod
+    def get_status(service: dict) -> str:
         """
         Returns the status of the train.
 
@@ -336,7 +352,8 @@ class TrainInformation:
         """
         return service["eta"]
 
-    def get_platform_number(self, service: dict) -> str:
+    @staticmethod
+    def get_platform_number(service: dict) -> str:
         """
         Gets the platform number of the train.
 
@@ -351,7 +368,8 @@ class TrainInformation:
         """
         return service["platform"]
 
-    def get_train_operator(self, service: dict) -> str:
+    @staticmethod
+    def get_train_operator(service: dict) -> str:
         """
         Gets the train operator the departing train.
 
@@ -366,7 +384,8 @@ class TrainInformation:
         """
         return service["operator"]
 
-    def get_origin_name(self, service: dict) -> str:
+    @staticmethod
+    def get_origin_name(service: dict) -> str:
         """
         Returns the name of the origin station.
 
@@ -381,7 +400,8 @@ class TrainInformation:
         """
         return service["origin"]["location"][0]["locationName"]
 
-    def get_destination(self, service: dict) -> str:
+    @staticmethod
+    def get_destination(service: dict) -> str:
         """
         Returns the name of the destination station.
 
@@ -396,14 +416,16 @@ class TrainInformation:
         """
         return service["destination"]["location"][0]["locationName"]
 
-    def check_train_cancellation(self, service: dict):
+    @staticmethod
+    def check_train_cancellation(service: dict):
         cancellation_status = service['isCancelled']
         cancel_reason = service['cancelReason']
         delay_reason = service['delayReason']
 
         return cancellation_status, cancel_reason, delay_reason
 
-    def calling_points(self, service: dict, _type: str) -> list:
+    @staticmethod
+    def calling_points(service: dict, _type: str) -> list:
         """
         Gets the calling points based on the _type param.
 
@@ -421,7 +443,7 @@ class TrainInformation:
         initiate_calling_points = service[_type]
 
         if initiate_calling_points is None:
-            cancellation_status, cancel_reason, delay_reason = TrainInformation().check_train_cancellation(
+            cancellation_status, cancel_reason, delay_reason = TrainInformation.check_train_cancellation(
                 service=service
             )
 
@@ -437,7 +459,8 @@ class TrainInformation:
 
             return calling_point_stations
 
-    def calling_times(self, service: dict, _type: str):
+    @staticmethod
+    def calling_times(service: dict, _type: str):
         """
         Gets the times of the calling points based on the _type param.
 
@@ -455,7 +478,7 @@ class TrainInformation:
         initiate_calling_points = service[_type]
 
         if initiate_calling_points is None:
-            cancellation_status, cancel_reason, delay_reason = TrainInformation().check_train_cancellation(
+            cancellation_status, cancel_reason, delay_reason = TrainInformation.check_train_cancellation(
                 service=service
             )
 
@@ -471,7 +494,8 @@ class TrainInformation:
 
             return calling_point_times
 
-    def calling_status(self, service: dict, _type: str) -> list:
+    @staticmethod
+    def calling_status(service: dict, _type: str) -> list:
         """
         Gets the status of the calling points based ont eh _type param.
         Parameters
@@ -488,7 +512,7 @@ class TrainInformation:
         initiate_calling_points = service[_type]
 
         if initiate_calling_points is None:
-            cancellation_status, cancel_reason, delay_reason = TrainInformation().check_train_cancellation(
+            cancellation_status, cancel_reason, delay_reason = TrainInformation.check_train_cancellation(
                 service=service
             )
 
@@ -504,7 +528,8 @@ class TrainInformation:
 
             return calling_point_status
 
-    def make_traintimes_dict(self, service: dict, station: str) -> dict:
+    @staticmethod
+    def make_traintimes_dict(service: dict, station: str) -> dict:
         """
         Makes a dictionary of the train times.
 
@@ -528,7 +553,7 @@ class TrainInformation:
             A string, with either the ETA or the reason for cancellation/delay.
 
             """
-            eta = TrainInformation().calling_times(service, "subsequentCallingPoints")
+            eta = TrainInformation.calling_times(service, "subsequentCallingPoints")
             check_list = isinstance(eta, list)
 
             if check_list:
@@ -538,18 +563,19 @@ class TrainInformation:
 
         df_dict = {
             "Station": station,
-            "Origin": TrainInformation().get_origin_name(service=service),
-            "Destination": TrainInformation().get_destination(service=service),
-            "Starting_Time": TrainInformation().get_starting_time(service=service),
+            "Origin": TrainInformation.get_origin_name(service=service),
+            "Destination": TrainInformation.get_destination(service=service),
+            "Starting_Time": TrainInformation.get_starting_time(service=service),
             "ETA": handle_eta_key(),
-            "Status": TrainInformation().get_status(service=service),
-            "Platform": TrainInformation().get_platform_number(service=service),
-            "Operator": TrainInformation().get_train_operator(service=service),
+            "Status": TrainInformation.get_status(service=service),
+            "Platform": TrainInformation.get_platform_number(service=service),
+            "Operator": TrainInformation.get_train_operator(service=service),
         }
 
         return df_dict
 
-    def make_calling_times_df(self, service: dict) -> pd.DataFrame:
+    @staticmethod
+    def make_calling_times_df(service: dict) -> pd.DataFrame:
         """
         Makes a dataframe of the calling station, times and statuses.
 
@@ -566,20 +592,20 @@ class TrainInformation:
         df_calling_points = pd.DataFrame(columns=["Calling_At", "Time", "Status"])
 
         # Get all the information
-        df_calling_points["Calling_At"] = TrainInformation().calling_points(
+        df_calling_points["Calling_At"] = TrainInformation.calling_points(
             service, "subsequentCallingPoints"
         )
-        df_calling_points["Time"] = TrainInformation().calling_times(
+        df_calling_points["Time"] = TrainInformation.calling_times(
             service, "subsequentCallingPoints"
         )
-        df_calling_points["Status"] = TrainInformation().calling_status(
+        df_calling_points["Status"] = TrainInformation.calling_status(
             service, "subsequentCallingPoints"
         )
 
         return df_calling_points
 
-    def get_latest_departures_df(self,
-                                 services: list,
+    @staticmethod
+    def get_latest_departures_df(services: list,
                                  station: str
                                  ) -> pd.DataFrame:
         """
@@ -598,7 +624,7 @@ class TrainInformation:
         df_list = []
 
         for service in services:
-            train_dict = TrainInformation().make_traintimes_dict(
+            train_dict = TrainInformation.make_traintimes_dict(
                 service=service, station=station
             )
             df = pd.DataFrame.from_dict(train_dict, orient="index").T
